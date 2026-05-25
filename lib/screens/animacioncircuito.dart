@@ -12,8 +12,7 @@ class AnimacionCircuitoScreen extends StatefulWidget {
       _AnimacionCircuitoScreenState();
 }
 
-class _AnimacionCircuitoScreenState
-    extends State<AnimacionCircuitoScreen> {
+class _AnimacionCircuitoScreenState extends State<AnimacionCircuitoScreen> {
   static const Offset sensorPos = Offset(0.28, 0.30);
 
   static const double minTemp = 24;
@@ -42,11 +41,9 @@ class _AnimacionCircuitoScreenState
       // INERCIA TÉRMICA
       // =========================
 
-      final thermalResponse =
-          target > temperature ? 0.018 : 0.008;
+      final thermalResponse = target > temperature ? 0.018 : 0.008;
 
-      temperature +=
-          (target - temperature) * thermalResponse;
+      temperature += (target - temperature) * thermalResponse;
 
       // =========================
       // VELOCIDAD VENTILADOR
@@ -54,8 +51,7 @@ class _AnimacionCircuitoScreenState
 
       final targetSpeed = fanSpeed * 0.55;
 
-      fanVelocity +=
-          (targetSpeed - fanVelocity) * 0.05;
+      fanVelocity += (targetSpeed - fanVelocity) * 0.05;
 
       // fricción
       fanVelocity *= 0.992;
@@ -82,8 +78,7 @@ class _AnimacionCircuitoScreenState
 
   double get fanSpeed {
     final normalized =
-        ((temperature - minTemp) / (maxTemp - minTemp))
-            .clamp(0.0, 1.0);
+        ((temperature - minTemp) / (maxTemp - minTemp)).clamp(0.0, 1.0);
 
     return pow(normalized, 1.7).toDouble();
   }
@@ -93,19 +88,16 @@ class _AnimacionCircuitoScreenState
 
     final dist = (sensorPos - flamePos).distance;
 
-    final heat =
-        (1.0 - (dist / 0.55)).clamp(0.0, 1.0);
+    final heat = (1.0 - (dist / 0.55)).clamp(0.0, 1.0);
 
     return minTemp + heat * (maxTemp - minTemp);
   }
 
   void _moveFlame(Offset localPos, Size size) {
     setState(() {
-      lighterX =
-          (localPos.dx / size.width).clamp(0.08, 0.92);
+      lighterX = (localPos.dx / size.width).clamp(0.08, 0.92);
 
-      lighterY =
-          (localPos.dy / size.height).clamp(0.54, 0.92);
+      lighterY = (localPos.dy / size.height).clamp(0.54, 0.92);
     });
   }
 
@@ -154,8 +146,7 @@ class _AnimacionCircuitoScreenState
                 padding: const EdgeInsets.all(24),
                 decoration: cardDecoration(),
                 child: const Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Control visual del sensor',
@@ -177,29 +168,42 @@ class _AnimacionCircuitoScreenState
                   ],
                 ),
               ),
+
               const SizedBox(height: 18),
+
+              // =========================
+              // BARRA DE TEMPERATURA ARRIBA
+              // =========================
               LayoutBuilder(
                 builder: (context, constraints) {
-                  final height =
-                      constraints.maxWidth > 900
-                          ? 560.0
-                          : 620.0;
+                  return _pipeLine(
+                    constraints.maxWidth,
+                    temperature,
+                  );
+                },
+              ),
 
-                  final size =
-                      Size(constraints.maxWidth, height);
+              const SizedBox(height: 18),
+
+              // =========================
+              // PANTALLA INTERACTIVA
+              // =========================
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final height = constraints.maxWidth > 900 ? 560.0 : 620.0;
+
+                  final size = Size(constraints.maxWidth, height);
 
                   return GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onPanDown: (details) =>
-                        _moveFlame(
-                          details.localPosition,
-                          size,
-                        ),
-                    onPanUpdate: (details) =>
-                        _moveFlame(
-                          details.localPosition,
-                          size,
-                        ),
+                    onPanDown: (details) => _moveFlame(
+                      details.localPosition,
+                      size,
+                    ),
+                    onPanUpdate: (details) => _moveFlame(
+                      details.localPosition,
+                      size,
+                    ),
                     child: SizedBox(
                       width: double.infinity,
                       height: height,
@@ -210,6 +214,7 @@ class _AnimacionCircuitoScreenState
                               decoration: cardDecoration(),
                             ),
                           ),
+
                           Positioned(
                             left: size.width * 0.08,
                             top: size.height * 0.10,
@@ -220,6 +225,7 @@ class _AnimacionCircuitoScreenState
                               Colors.orangeAccent,
                             ),
                           ),
+
                           Positioned(
                             right: size.width * 0.08,
                             top: size.height * 0.10,
@@ -230,15 +236,13 @@ class _AnimacionCircuitoScreenState
                               Colors.greenAccent,
                             ),
                           ),
+
                           Positioned(
-                            left:
-                                size.width * sensorPos.dx -
-                                58,
-                            top:
-                                size.height * sensorPos.dy -
-                                58,
+                            left: size.width * sensorPos.dx - 58,
+                            top: size.height * sensorPos.dy - 58,
                             child: _sensorWidget(),
                           ),
+
                           Positioned(
                             left: size.width * 0.70,
                             top: size.height * 0.30,
@@ -246,26 +250,11 @@ class _AnimacionCircuitoScreenState
                               child: _fanWidget(),
                             ),
                           ),
+
                           Positioned(
-                            left:
-                                size.width * lighterX - 26,
-                            top:
-                                size.height * lighterY - 26,
+                            left: size.width * lighterX - 26,
+                            top: size.height * lighterY - 26,
                             child: _flameWidget(),
-                          ),
-                          Positioned(
-                            left: size.width * 0.20,
-                            top: size.height * 0.18,
-                            child: _pipeLine(
-                              size.width * 0.48,
-                              temperature,
-                            ),
-                          ),
-                          Positioned(
-                            left: 20,
-                            right: 20,
-                            bottom: 20,
-                            child: _bottomPanel(),
                           ),
                         ],
                       ),
@@ -273,6 +262,14 @@ class _AnimacionCircuitoScreenState
                   );
                 },
               ),
+
+              const SizedBox(height: 18),
+
+              // =========================
+              // PANEL DE ESTADÍSTICAS ABAJO
+              // FUERA DE LA PANTALLA INTERACTIVA
+              // =========================
+              _bottomPanel(),
             ],
           ),
         ),
@@ -368,8 +365,7 @@ class _AnimacionCircuitoScreenState
                       color: Colors.greenAccent,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.greenAccent
-                              .withOpacity(0.5),
+                          color: Colors.greenAccent.withOpacity(0.5),
                           blurRadius: 18,
                         ),
                       ],
@@ -385,8 +381,7 @@ class _AnimacionCircuitoScreenState
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Colors.greenAccent
-                        .withOpacity(speed * 0.25),
+                    color: Colors.greenAccent.withOpacity(speed * 0.25),
                     width: 8,
                   ),
                 ),
@@ -448,8 +443,7 @@ class _AnimacionCircuitoScreenState
 
   Widget _flameWidget() {
     final heat =
-        ((temperature - minTemp) / (maxTemp - minTemp))
-            .clamp(0.0, 1.0);
+        ((temperature - minTemp) / (maxTemp - minTemp)).clamp(0.0, 1.0);
 
     final pulse = sin(flameAnimation * 3) * 4;
 
@@ -466,8 +460,7 @@ class _AnimacionCircuitoScreenState
                 color: Colors.orangeAccent.withOpacity(0.15),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orangeAccent
-                        .withOpacity(0.45),
+                    color: Colors.orangeAccent.withOpacity(0.45),
                     blurRadius: 30 + pulse,
                     spreadRadius: 5,
                   ),
@@ -501,9 +494,7 @@ class _AnimacionCircuitoScreenState
   }
 
   Widget _pipeLine(double width, double temp) {
-    final heat =
-        ((temp - minTemp) / (maxTemp - minTemp))
-            .clamp(0.0, 1.0);
+    final heat = ((temp - minTemp) / (maxTemp - minTemp)).clamp(0.0, 1.0);
 
     return Stack(
       children: [
@@ -556,11 +547,9 @@ class _AnimacionCircuitoScreenState
 
   Widget _bottomPanel() {
     final heat =
-        ((temperature - minTemp) / (maxTemp - minTemp))
-            .clamp(0.0, 1.0);
+        ((temperature - minTemp) / (maxTemp - minTemp)).clamp(0.0, 1.0);
 
-    final blower =
-        (fanSpeed * 100).toStringAsFixed(0);
+    final blower = (fanSpeed * 100).toStringAsFixed(0);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -655,8 +644,7 @@ class _AnimacionCircuitoScreenState
           const SizedBox(width: 10),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
@@ -698,7 +686,7 @@ class _AnimacionCircuitoScreenState
         BoxShadow(
           color: Colors.black.withOpacity(0.40),
           blurRadius: 14,
-          offset: const Offset(0, 8),
+          offset: Offset(0, 8),
         ),
       ],
     );

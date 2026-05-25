@@ -1,3 +1,4 @@
+import 'package:dcppwer/screens/SimuladorModeloScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:dcppwer/screens/controlscreen.dart';
 import 'package:dcppwer/screens/folletoscreen.dart';
@@ -101,6 +102,11 @@ class PanelDesplegable extends StatelessWidget {
 							_futureTile(
 								title: 'Simulador de modelo equivalente',
 								icon: Icons.account_tree_outlined,
+                selected: currentScreen == 'simuladormodeloequivalente',
+								onTap: () => _openScreen(
+									context,
+									const SimuladorModeloScreen(),
+								),
 							),
 							_futureTile(
 								title: 'Respuesta temporal del sistema',

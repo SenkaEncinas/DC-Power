@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:dcppwer/screens/folletoscreen.dart';
 import 'package:dcppwer/screens/informescreen.dart';
+import 'package:dcppwer/screens/panel_desplegable.dart';
 
 class ControlScreen extends StatefulWidget {
   const ControlScreen({super.key});
@@ -61,17 +62,13 @@ class _ControlScreenState extends State<ControlScreen>
     /// MODELO MATEMATICO
     /// =========================
 
-    double vin = temperatura * 0.01;
+    final double vin = temperatura * 0.01;
     double ganancia = 1 + (r1 / r2);
 
     final double rawVout = vin * ganancia;
-    final bool over12 = rawVout > 12;
-    final bool over15 = rawVout > 15;
+    final bool saturated = rawVout > 12;
 
-    double vout = rawVout;
-    if (vout > 12) {
-      vout = 12;
-    }
+    final double vout = rawVout > 12 ? 12 : rawVout;
 
     double velocidad = (vout / 12) * 100;
 
@@ -85,6 +82,7 @@ class _ControlScreenState extends State<ControlScreen>
 
     return Scaffold(
       backgroundColor: Colors.black,
+      drawer: const PanelDesplegable(currentScreen: 'control'),
       appBar: AppBar(
 
         backgroundColor: Colors.black,
@@ -135,7 +133,7 @@ class _ControlScreenState extends State<ControlScreen>
         ),
         child: SingleChildScrollView(
 
-          padding: EdgeInsets.all(16), // antes 20
+          padding: EdgeInsets.all(12), // antes 20
 
           child: Column(
 
@@ -151,7 +149,7 @@ class _ControlScreenState extends State<ControlScreen>
 
                 width: double.infinity,
 
-                padding: EdgeInsets.all(16), // antes 20
+                padding: EdgeInsets.all(12), // antes 20
 
                 decoration: cardDecoration(),
 
@@ -165,7 +163,7 @@ class _ControlScreenState extends State<ControlScreen>
                       "Resumen en tiempo real",
                       style: TextStyle(
                         color: Colors.greenAccent,
-                        fontSize: 18, // antes 20
+                        fontSize: 16, // antes 20
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -174,8 +172,8 @@ class _ControlScreenState extends State<ControlScreen>
 
                     Wrap(
 
-                      spacing: 16,
-                      runSpacing: 16,
+                      spacing: 12,
+                      runSpacing: 12,
 
                       children: [
 
@@ -209,77 +207,9 @@ class _ControlScreenState extends State<ControlScreen>
                       ],
                     ),
 
-                    SizedBox(height: 14),
-
-                    Text(
-                      "Tendencia de velocidad",
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14, // antes 16
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
                     SizedBox(height: 10),
-
-                    Container(
-                      height: 140, // antes 160
-                      padding: EdgeInsets.all(12), // antes 16
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.white10,
-                            Colors.white12,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: Colors.white12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.35),
-                            blurRadius: 16,
-                            offset: Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Stack(
-                        children: [
-                          CustomPaint(
-                            painter: _LineChartPainter(chartData),
-                            child: Container(),
-                          ),
-                          Positioned(
-                            left: 0,
-                            top: 0,
-                            child: RotatedBox(
-                              quarterTurns: -1,
-                              child: Text(
-                                "Velocidad",
-                                style: TextStyle(
-                                  color: Colors.white54,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: Text(
-                              "Tiempo",
-                              style: TextStyle(
-                                color: Colors.white54,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    //motor
+                    
                   ],
                 ),
               ),
@@ -300,7 +230,7 @@ class _ControlScreenState extends State<ControlScreen>
 
                   Expanded(
 
-                    flex: 2,
+                    flex: 1,
 
                     child: Column(
 
@@ -316,11 +246,74 @@ class _ControlScreenState extends State<ControlScreen>
                           velocidad,
                           ganancia,
                         ),
+
+                        SizedBox(height: 16),
+
+                        sectionTitle("Velocidad del Motor"),
+
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.all(12),
+                          decoration: cardDecoration(),
+                          child: Column(
+                            children: [
+                              AnimatedBuilder(
+                                animation: controller,
+                                builder: (_, child) {
+                                  return Transform.rotate(
+                                    angle: controller.value * velocidad / 8,
+                                    child: Icon(
+                                      saturated
+                                          ? Icons.warning_amber_rounded
+                                          : Icons.toys,
+                                      size: 96,
+                                      color: saturated
+                                          ? Colors.orangeAccent
+                                          : Colors.greenAccent,
+                                    ),
+                                  );
+                                },
+                              ),
+
+                              SizedBox(height: 12),
+
+                              if (saturated)
+                                Text(
+                                  "LM324 saturado: salida limitada a 12V",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.orangeAccent,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+
+                              SizedBox(height: 12),
+
+                              Text(
+                                "${velocidad.toStringAsFixed(0)} %",
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+
+                              SizedBox(height: 12),
+
+                              LinearProgressIndicator(
+                                value: velocidad / 100,
+                                color: Colors.greenAccent,
+                                backgroundColor: Colors.white10,
+                                minHeight: 8,
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
 
-                  SizedBox(width: 16), // antes 20
+                  SizedBox(width: 12), // antes 20
 
                   /// =====================================
                   /// MODELO MATEMATICO
@@ -342,7 +335,7 @@ class _ControlScreenState extends State<ControlScreen>
 
                           width: double.infinity,
 
-                          padding: EdgeInsets.all(18), // antes 25
+                          padding: EdgeInsets.all(12), // antes 25
 
                           decoration: cardDecoration(),
 
@@ -356,12 +349,12 @@ class _ControlScreenState extends State<ControlScreen>
                                 "Amplificador No Inversor",
                                 style: TextStyle(
                                   color: Colors.greenAccent,
-                                  fontSize: 20, // antes 22
+                                  fontSize: 18, // antes 22
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
 
-                              SizedBox(height: 16), // antes 25
+                              SizedBox(height: 12), // antes 25
 
                               Center(
 
@@ -372,14 +365,14 @@ class _ControlScreenState extends State<ControlScreen>
                                   textAlign: TextAlign.center,
 
                                   style: TextStyle(
-                                    fontSize: 20, // antes 24
+                                    fontSize: 18, // antes 24
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
 
-                              SizedBox(height: 16),
+                              SizedBox(height: 10),
 
                               infoText(
                                 "Vin = ${vin.toStringAsFixed(2)} V",
@@ -403,12 +396,12 @@ class _ControlScreenState extends State<ControlScreen>
                                 "Función Transferencia",
                                 style: TextStyle(
                                   color: Colors.orange,
-                                  fontSize: 18, // antes 20
+                                  fontSize: 16, // antes 20
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
 
-                              SizedBox(height: 14),
+                              SizedBox(height: 10),
 
                               Center(
 
@@ -417,14 +410,14 @@ class _ControlScreenState extends State<ControlScreen>
                                   "G(s)=K/(τs+1)",
 
                                   style: TextStyle(
-                                    fontSize: 24, // antes 28
+                                    fontSize: 20, // antes 28
                                     color: Colors.orange,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
 
-                              SizedBox(height: 14),
+                              SizedBox(height: 10),
 
                               infoText(
                                 "K = ${ganancia.toStringAsFixed(2)}",
@@ -434,13 +427,13 @@ class _ControlScreenState extends State<ControlScreen>
                                 "τ = 0.5",
                               ),
 
-                              SizedBox(height: 16),
+                              SizedBox(height: 10),
 
                               LinearProgressIndicator(
                                 value: velocidad / 100,
                                 color: Colors.greenAccent,
                                 backgroundColor: Colors.white10,
-                                minHeight: 8, // antes 10
+                                minHeight: 6, // antes 10
                               ),
                             ],
                           ),
@@ -451,7 +444,7 @@ class _ControlScreenState extends State<ControlScreen>
                 ],
               ),
 
-              SizedBox(height: 24), // antes 30
+              SizedBox(height: 16), // antes 30
 
               /// =========================================
               /// CONTROL GANANCIA
@@ -463,7 +456,7 @@ class _ControlScreenState extends State<ControlScreen>
 
                 width: double.infinity,
 
-                padding: EdgeInsets.all(18), // antes 25
+                padding: EdgeInsets.all(12), // antes 25
 
                 decoration: cardDecoration(),
 
@@ -474,13 +467,13 @@ class _ControlScreenState extends State<ControlScreen>
                     Text(
                       "Ajuste de resistencias y temperatura",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         color: Colors.greenAccent,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
 
-                    SizedBox(height: 16),
+                    SizedBox(height: 12),
 
                     Row(
                       children: [
@@ -498,8 +491,8 @@ class _ControlScreenState extends State<ControlScreen>
                               SliderTheme(
                                 data: SliderTheme.of(context).copyWith(
                                   trackHeight: 2,
-                                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 6),
-                                  overlayShape: RoundSliderOverlayShape(overlayRadius: 10),
+                                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 5),
+                                  overlayShape: RoundSliderOverlayShape(overlayRadius: 8),
                                 ),
                                 child: Slider(
                                   min: 1000,
@@ -514,13 +507,13 @@ class _ControlScreenState extends State<ControlScreen>
                                   },
                                 ),
                               ),
-                              SizedBox(height: 6),
+                              SizedBox(height: 4),
                               SizedBox(
                                 height: 36,
                                 child: TextField(
                                   controller: r1Controller,
                                   keyboardType: TextInputType.number,
-                                  style: TextStyle(color: Colors.white, fontSize: 14),
+                                  style: TextStyle(color: Colors.white, fontSize: 13),
                                   decoration: InputDecoration(
                                     isDense: true,
                                     contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -541,7 +534,7 @@ class _ControlScreenState extends State<ControlScreen>
                               Text(
                                 "${r1.toStringAsFixed(0)} Ω",
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -566,8 +559,8 @@ class _ControlScreenState extends State<ControlScreen>
                               SliderTheme(
                                 data: SliderTheme.of(context).copyWith(
                                   trackHeight: 2,
-                                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 6),
-                                  overlayShape: RoundSliderOverlayShape(overlayRadius: 10),
+                                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 5),
+                                  overlayShape: RoundSliderOverlayShape(overlayRadius: 8),
                                 ),
                                 child: Slider(
                                   min: 1000,
@@ -582,13 +575,13 @@ class _ControlScreenState extends State<ControlScreen>
                                   },
                                 ),
                               ),
-                              SizedBox(height: 6),
+                              SizedBox(height: 4),
                               SizedBox(
                                 height: 36,
                                 child: TextField(
                                   controller: r2Controller,
                                   keyboardType: TextInputType.number,
-                                  style: TextStyle(color: Colors.white, fontSize: 14),
+                                  style: TextStyle(color: Colors.white, fontSize: 13),
                                   decoration: InputDecoration(
                                     isDense: true,
                                     contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -609,7 +602,7 @@ class _ControlScreenState extends State<ControlScreen>
                               Text(
                                 "${r2.toStringAsFixed(0)} Ω",
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -634,8 +627,8 @@ class _ControlScreenState extends State<ControlScreen>
                               SliderTheme(
                                 data: SliderTheme.of(context).copyWith(
                                   trackHeight: 2,
-                                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 6),
-                                  overlayShape: RoundSliderOverlayShape(overlayRadius: 10),
+                                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 5),
+                                  overlayShape: RoundSliderOverlayShape(overlayRadius: 8),
                                 ),
                                 child: Slider(
                                   min: 0,
@@ -652,7 +645,7 @@ class _ControlScreenState extends State<ControlScreen>
                               Text(
                                 "${temperatura.toStringAsFixed(1)} °C",
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -666,93 +659,13 @@ class _ControlScreenState extends State<ControlScreen>
                 ),
               ),
 
-              SizedBox(height: 24),
+              SizedBox(height: 16),
 
               /// =========================================
               /// MOTOR
               /// =========================================
 
-              sectionTitle("Velocidad del Motor"),
-
-              Container(
-
-                width: double.infinity,
-
-                padding: EdgeInsets.all(18), // antes 25
-
-                decoration: cardDecoration(),
-
-                child: Column(
-
-                  children: [
-
-                    AnimatedBuilder(
-
-                      animation: controller,
-
-                      builder: (_, child) {
-
-                        return Transform.rotate(
-
-                          angle: controller.value * velocidad / 8,
-
-                          child: Icon(
-                            over15 ? Icons.sentiment_very_dissatisfied : Icons.toys,
-                            size: 120, // antes 140
-                            color: over15 ? Colors.redAccent : Colors.greenAccent,
-                          ),
-                        );
-                      },
-                    ),
-
-                    SizedBox(height: 12),
-
-                    if (over15)
-                      Text(
-                        "MOTOR MUERTO (Vout > 15V)",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.redAccent,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    else if (over12)
-                      Text(
-                        "ADVERTENCIA: Vout > 12V",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.orangeAccent,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                    SizedBox(height: 12),
-
-                    Text(
-                      "${velocidad.toStringAsFixed(0)} %",
-
-                      style: TextStyle(
-                        fontSize: 34, // antes 42
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    SizedBox(height: 16),
-
-                    LinearProgressIndicator(
-
-                      value: velocidad / 100,
-
-                      color: Colors.greenAccent,
-
-                      backgroundColor: Colors.white10,
-
-                      minHeight: 10, // antes 14
-                    ),
-                  ],
-                ),
-              ),
+              
 
               SizedBox(height: 36), // antes 50
             ],
@@ -775,8 +688,8 @@ class _ControlScreenState extends State<ControlScreen>
 
     return Container(
       width: double.infinity,
-      height: 280,
-      padding: EdgeInsets.all(16),
+      height: 220,
+      padding: EdgeInsets.all(12),
       decoration: cardDecoration(),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -818,6 +731,7 @@ class _ControlScreenState extends State<ControlScreen>
       ),
     );
   }
+  
 
   /// ====================================
   /// COMPONENT BOX
@@ -833,8 +747,8 @@ class _ControlScreenState extends State<ControlScreen>
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: 90,
-          height: 90,
+          width: 76,
+          height: 76,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -844,27 +758,27 @@ class _ControlScreenState extends State<ControlScreen>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: color.withOpacity(0.9),
-              width: 2,
+              width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
                 color: color.withOpacity(0.25),
-                blurRadius: 14,
-                offset: Offset(0, 6),
+                blurRadius: 10,
+                offset: Offset(0, 4),
               ),
             ],
           ),
           child: Icon(
             icon,
-            size: 45,
+            size: 34,
             color: color,
           ),
         ),
 
-        SizedBox(height: 15),
+        SizedBox(height: 10),
 
         Text(
 
@@ -873,10 +787,11 @@ class _ControlScreenState extends State<ControlScreen>
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
+            fontSize: 12,
           ),
         ),
 
-        SizedBox(height: 6),
+        SizedBox(height: 4),
 
         Text(
 
@@ -885,6 +800,7 @@ class _ControlScreenState extends State<ControlScreen>
           style: TextStyle(
             color: color,
             fontWeight: FontWeight.bold,
+            fontSize: 11,
           ),
         ),
       ],
@@ -902,7 +818,7 @@ class _ControlScreenState extends State<ControlScreen>
         builder: (_, __) {
           return CustomPaint(
             painter: _FlowPainter(controller.value, color, speedMultiplier),
-            child: Container(height: 20),
+            child: Container(height: 16),
           );
         },
       ),
@@ -917,7 +833,7 @@ class _ControlScreenState extends State<ControlScreen>
 
     return Padding(
 
-      padding: EdgeInsets.only(bottom: 10), // antes 15
+      padding: EdgeInsets.only(bottom: 8), // antes 15
 
       child: Align(
 
@@ -928,7 +844,7 @@ class _ControlScreenState extends State<ControlScreen>
           title,
 
           style: TextStyle(
-            fontSize: 24, // antes 30
+            fontSize: 20, // antes 30
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -945,14 +861,14 @@ class _ControlScreenState extends State<ControlScreen>
 
     return Padding(
 
-      padding: EdgeInsets.only(bottom: 8), // antes 10
+      padding: EdgeInsets.only(bottom: 6), // antes 10
 
       child: Text(
 
         text,
 
         style: TextStyle(
-          fontSize: 16, // antes 20
+          fontSize: 14, // antes 20
           color: Colors.white,
         ),
       ),
@@ -1004,9 +920,9 @@ class _ControlScreenState extends State<ControlScreen>
 
     return Container(
 
-      width: 200, // antes 220
+      width: 170, // antes 220
 
-      padding: EdgeInsets.all(12), // antes 16
+      padding: EdgeInsets.all(10), // antes 16
 
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -1033,16 +949,16 @@ class _ControlScreenState extends State<ControlScreen>
         children: [
 
           Container(
-            width: 36, // antes 42
-            height: 36,
+            width: 32, // antes 42
+            height: 32,
             decoration: BoxDecoration(
               color: color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(10), // antes 12
+              borderRadius: BorderRadius.circular(8), // antes 12
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 18),
           ),
 
-          SizedBox(width: 10),
+          SizedBox(width: 8),
 
           Expanded(
             child: Column(
@@ -1052,16 +968,16 @@ class _ControlScreenState extends State<ControlScreen>
                   title,
                   style: TextStyle(
                     color: Colors.white70,
-                    fontSize: 11, // antes 12
+                    fontSize: 10, // antes 12
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: 2),
                 Text(
                   value,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 16, // antes 18
+                    fontSize: 14, // antes 18
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -1146,7 +1062,7 @@ class _FlowPainter extends CustomPainter {
 /// LINE CHART PAINTER
 /// ====================================
 
-class _LineChartPainter extends CustomPainter {
+  class _LineChartPainter extends CustomPainter {
 
   _LineChartPainter(this.data);
 

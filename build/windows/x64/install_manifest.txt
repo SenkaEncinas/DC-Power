@@ -3,6 +3,7 @@ C:/Users/PERSONAL/Desktop/Universidad/Progra aplicada/Ingenieria de control/dcpp
 C:/Users/PERSONAL/Desktop/Universidad/Progra aplicada/Ingenieria de control/dcppwer/build/windows/x64/runner/Release/data/flutter_assets/AssetManifest.bin
 C:/Users/PERSONAL/Desktop/Universidad/Progra aplicada/Ingenieria de control/dcppwer/build/windows/x64/runner/Release/data/flutter_assets/AssetManifest.bin.json
 C:/Users/PERSONAL/Desktop/Universidad/Progra aplicada/Ingenieria de control/dcppwer/build/windows/x64/runner/Release/data/flutter_assets/assets/folleto.png
+C:/Users/PERSONAL/Desktop/Universidad/Progra aplicada/Ingenieria de control/dcppwer/build/windows/x64/runner/Release/data/flutter_assets/assets/formulamatematica.png
 C:/Users/PERSONAL/Desktop/Universidad/Progra aplicada/Ingenieria de control/dcppwer/build/windows/x64/runner/Release/data/flutter_assets/assets/informe_diagrama.png
 C:/Users/PERSONAL/Desktop/Universidad/Progra aplicada/Ingenieria de control/dcppwer/build/windows/x64/runner/Release/data/flutter_assets/assets/informe_portada.png
 C:/Users/PERSONAL/Desktop/Universidad/Progra aplicada/Ingenieria de control/dcppwer/build/windows/x64/runner/Release/data/flutter_assets/assets/logo.png
